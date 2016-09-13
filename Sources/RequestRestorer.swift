@@ -12,7 +12,7 @@ public final class RequestRestorer {
 
   // MARK: - Initialization
 
-  init(networking: Networking) {
+  public init(networking: Networking) {
     self.networking = networking
   }
 
