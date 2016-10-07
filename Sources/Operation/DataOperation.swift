@@ -1,25 +1,27 @@
 import Foundation
 
-public typealias DataTaskCompletion = (NSData?, NSURLResponse?, NSError?) -> Void
+public typealias DataTaskCompletion = (Data?, URLResponse?, NSError?) -> Void
 
 class DataOperation: ConcurrentOperation {
 
-  private let session: NSURLSession
-  private let request: NSURLRequest
-  private let completion: DataTaskCompletion
-  private var task: NSURLSessionDataTask?
+  fileprivate let session: URLSession
+  fileprivate let request: URLRequest
+  fileprivate let completion: DataTaskCompletion
+  fileprivate var task: URLSessionDataTask?
 
-  init(session: NSURLSession, request: NSURLRequest, completion: DataTaskCompletion) {
+  init(session: URLSession, request: URLRequest, completion: @escaping DataTaskCompletion) {
     self.session = session
     self.request = request
     self.completion = completion
   }
 
   override func execute() {
-    task = session.dataTaskWithRequest(request) { [weak self] (data, response, error) in
-      self?.completion(data, response, error)
-      self?.state = .Finished
-    }
+    task = session.dataTask(with: request, completionHandler: {
+      [weak self] (data, response, error) in
+
+      self?.completion(data, response, error as NSError?)
+      self?.state = .finished
+    }) 
 
     task?.resume()
   }

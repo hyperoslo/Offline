@@ -3,33 +3,35 @@ import Foundation
 public final class Networking {
 
   public enum Kind {
-    case Sync, Async, Limited(Int)
+    case sync, async, limited(Int)
   }
 
   public let kind: Kind
-  private let session: NSURLSession
-  private let queue: NSOperationQueue
+  fileprivate let session: URLSession
+  fileprivate let queue: OperationQueue
 
   // MARK: - Initialization
 
-  public init(kind: Kind, session: NSURLSession = NSURLSession.sharedSession()) {
+  public init(kind: Kind, session: URLSession = URLSession.shared) {
     self.kind = kind
     self.session = session
-    queue = NSOperationQueue()
+    queue = OperationQueue()
 
     switch kind {
-    case .Sync:
+    case .sync:
       queue.maxConcurrentOperationCount = 1
-    case .Async:
+    case .async:
       queue.maxConcurrentOperationCount = -1
-    case .Limited(let count):
+    case .limited(let count):
       queue.maxConcurrentOperationCount = count
     }
   }
 
   // MARK: - Data request
 
-  public func send(request: NSURLRequest, saveOffline: Bool = false, completion: DataTaskCompletion) {
+  public func send(_ request: URLRequest,
+                   saveOffline: Bool = false,
+                   completion: @escaping DataTaskCompletion) {
     let operation = DataOperation(session: session, request: request) {
       data, response, error in
 

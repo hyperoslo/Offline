@@ -5,10 +5,10 @@ public final class RequestStorage {
 
   public static let shared: RequestStorage = RequestStorage()
 
-  public private(set) var requests = [String: NSURLRequest]()
+  public fileprivate(set) var requests = [String: URLRequest]()
 
-  private var userDefaults: NSUserDefaults {
-    return NSUserDefaults.standardUserDefaults()
+  fileprivate var userDefaults: UserDefaults {
+    return UserDefaults.standard
   }
 
   // MARK: - Initialization
@@ -19,8 +19,8 @@ public final class RequestStorage {
 
   // MARK: - Save
 
-  public func save(request: NSURLRequest) {
-    guard let key = request.URL?.absoluteString else {
+  public func save(_ request: URLRequest) {
+    guard let key = request.url?.absoluteString else {
       return
     }
 
@@ -29,33 +29,33 @@ public final class RequestStorage {
   }
 
   public func saveAll() {
-    let data = NSKeyedArchiver.archivedDataWithRootObject(requests)
-    userDefaults.setObject(data, forKey: key)
+    let data = NSKeyedArchiver.archivedData(withRootObject: requests)
+    userDefaults.set(data, forKey: key)
     userDefaults.synchronize()
   }
 
   // MARK: - Remove
 
-  public func remove(request: NSURLRequest) {
-    guard let key = request.URL?.absoluteString else {
+  public func remove(_ request: URLRequest) {
+    guard let key = request.url?.absoluteString else {
       return
     }
 
-    requests.removeValueForKey(key)
+    requests.removeValue(forKey: key)
     saveAll()
   }
 
   public func clear() {
     requests.removeAll()
-    userDefaults.removeObjectForKey(key)
+    userDefaults.removeObject(forKey: key)
     userDefaults.synchronize()
   }
 
   // MARK: - Load
 
-  func load() -> [String: NSURLRequest] {
-    guard let data = userDefaults.objectForKey(key) as? NSData,
-      dictionary = NSKeyedUnarchiver.unarchiveObjectWithData(data) as? [String: NSURLRequest]
+  func load() -> [String: URLRequest] {
+    guard let data = userDefaults.object(forKey: key) as? Data,
+      let dictionary = NSKeyedUnarchiver.unarchiveObject(with: data) as? [String: URLRequest]
       else { return [:] }
 
     return dictionary

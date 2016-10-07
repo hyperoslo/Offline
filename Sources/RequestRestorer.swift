@@ -2,8 +2,8 @@ import Foundation
 
 public final class RequestRestorer {
 
-  public typealias Before = (NSMutableURLRequest, (NSURLRequest -> Void)) -> Void
-  public typealias Completion = (NSURLRequest, NSURLResponse?, NSError?) -> Void
+  public typealias Before = (inout URLRequest, ((URLRequest) -> Void)) -> Void
+  public typealias Completion = (URLRequest, URLResponse?, NSError?) -> Void
 
   public var before: Before = { request, completion in completion(request) }
   public var running = false
@@ -18,7 +18,7 @@ public final class RequestRestorer {
 
   // MARK: - Replay
 
-  public func replay(completion: Completion? = nil) {
+  public func replay(_ completion: Completion? = nil) {
     let requests = RequestStorage.shared.requests
 
     guard !running && requests.count > 0 else {
@@ -29,19 +29,14 @@ public final class RequestRestorer {
 
     var count = requests.count
 
-    for request in requests.values {
-      guard let mutableRequest = request.mutableCopy() as? NSMutableURLRequest else {
-        continue
-      }
-
-      before(mutableRequest) { [weak self] request in
+    for var request in requests.values {
+      before(&request) { [weak self] request in
         self?.networking.send(request) { [weak self] data, response, error in
           if error?.isOffline != true {
             RequestStorage.shared.remove(request)
           }
 
           completion?(request, response, error)
-
           count -= 1
 
           if count == 0 {
