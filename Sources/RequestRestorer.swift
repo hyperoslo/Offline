@@ -2,7 +2,7 @@ import Foundation
 
 public final class RequestRestorer {
 
-  public typealias Before = (inout URLRequest, ((URLRequest) -> Void)) -> Void
+  public typealias Before = (URLRequest, (@escaping (URLRequest) -> Void)) -> Void
   public typealias Completion = (URLRequest, URLResponse?, NSError?) -> Void
 
   public var before: Before = { request, completion in completion(request) }
@@ -29,8 +29,8 @@ public final class RequestRestorer {
 
     var count = requests.count
 
-    for var request in requests.values {
-      before(&request) { [weak self] request in
+    for let request in requests.values {
+      before(request) { [weak self] request in
         self?.networking.send(request) { [weak self] data, response, error in
           if error?.isOffline != true {
             RequestStorage.shared.remove(request)
