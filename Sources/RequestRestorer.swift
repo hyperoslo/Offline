@@ -29,7 +29,7 @@ public final class RequestRestorer {
 
     var count = requests.count
 
-    for let request in requests.values {
+    for request in requests.values {
       before(request) { [weak self] request in
         self?.networking.send(request) { [weak self] data, response, error in
           if error?.isOffline != true {
